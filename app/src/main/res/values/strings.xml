@@ -3,11 +3,13 @@
 
     <string name="app_name">Event-Brite-Assignment</string>
     <string name="keyword_search">Search Keyword e.g. NYC</string>
-    <string name="location_search">Search Location e.g. New York</string>
+    <string name="location_search">Current Location</string>
     <string name="button_search">Search</string>
     <string name="action_settings">Settings</string>
     <string name="error_message_title">Error!!</string>
     <string name="error_server">Server Error</string>
-    <string name="category_options_text">Select Event Category</string>
+    <string name="category_options_text">Select Categories</string>
     <string name="map_results_text">Search Results</string>
+    <string name="map_details_text">Event Details</string>
+
 </resources>

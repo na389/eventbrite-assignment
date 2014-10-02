@@ -5,5 +5,5 @@
     <dimen name="search_spinner_width">200dp</dimen>
     <dimen name="search_spinner_height">35dp</dimen>
     <dimen name="suggestion_text_size">25sp</dimen>
-    <dimen name="text_size">15sp</dimen>
+    <dimen name="text_size">20sp</dimen>
 </resources>

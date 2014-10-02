@@ -17,6 +17,8 @@ import java.util.List;
 
 /**
  * Created by na389 on 9/30/14.
+ * Loader used to handle the autocomplete feature of the keyword and location in main search screen.
+ * It makes the call gets the results and converts it to corresponding data model so that it can be used within the implementation.
  */
 public class SearchTask extends AsyncTaskLoader<List<String>> {
     private String TAG = "SearchTask";
@@ -24,8 +26,8 @@ public class SearchTask extends AsyncTaskLoader<List<String>> {
     private Context mContext;
     private List<String> mSearchResults;
     private HashMap<String, String> mParams;
-    private GetSearchSuggestionsListener mListener;
     private List<String> mResult;
+
     public SearchTask(Context context, int apiName, HashMap<String, String> params) {
         super(context);
         this.mContext = context;
@@ -87,10 +89,5 @@ public class SearchTask extends AsyncTaskLoader<List<String>> {
     @Override
     protected void onStopLoading() {
         cancelLoad();
-    }
-
-    public interface  GetSearchSuggestionsListener{
-        public void setPlacesSuggestions(List<String> placesSuggestions);
-        public void setKeywordSuggestions(List<String> keywordSuggestions);
     }
 }

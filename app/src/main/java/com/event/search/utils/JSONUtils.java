@@ -26,7 +26,10 @@ import java.util.List;
 
 /**
  * Created by na389 on 9/27/14.
+ * Utility class containing various methods used during the JSON call to deliver results to the user.
+ * Jackson parser has been used to parse the JSON in the following functions.
  */
+
 public class JSONUtils {
     public static final String API_URL_COMMON = "https://www.eventbriteapi.com/v3/";
     public static final String OAUTH_CLIENT_TOKEN ="LT4ADC6NUIVTQP5EDKEW";
@@ -44,6 +47,10 @@ public class JSONUtils {
     public static final String API_NAME = "api_name";
     public static final String API_PARAMS = "api_params";
     private static String TAG = "JSONUtils";
+
+    /**
+     * Returns the wrapper of the categories from the json result passed to it.
+     */
 
     public static ListCategories createCategory(String json){
         ListCategories jsonResult = new ListCategories();
@@ -63,6 +70,11 @@ public class JSONUtils {
         }
         return jsonResult;
     }
+
+    /**
+     * Returns the wrapper of the events from the json result passed to it.
+     */
+
     public static ListEvents createEvents(String json){
         ListEvents jsonResult = new ListEvents();
         ObjectMapper mapper = new ObjectMapper();
@@ -82,6 +94,12 @@ public class JSONUtils {
         return jsonResult;
     }
 
+    /**
+     * Returns the search results for keyword search from the json result passed to it.
+     * Events name has been used as suggestions.
+     */
+
+
     public static List<String> createSearchResults(String json){
         ListEvents events = createEvents(json);
         List<String> eventName = new ArrayList<String>();
@@ -97,6 +115,12 @@ public class JSONUtils {
         }
         return eventName;
     }
+
+    /**
+     * Returns the search results for location search from the json result passed to it.
+     * Description of the Places has been used as it contains a lot of useful search keywords.
+     * Google Places API with autocomplete has been used.
+     */
 
     public static List<String> createPlacesSuggestions(String json){
         List<String> resultList = new ArrayList<String>();

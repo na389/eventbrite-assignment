@@ -1,3 +1,7 @@
+<ScrollView
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,6 +11,37 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin">
 
+    <LinearLayout
+        android:id="@+id/above_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="vertical"
+        android:layout_margin="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size"
+                android:text="@string/map_results_text"/>
+            <fragment
+                android:id="@+id/map_fragment"
+                android:tag="SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                class="com.google.android.gms.maps.SupportMapFragment"/>
+        </LinearLayout>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_below="@id/above_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
     <LinearLayout
         android:id="@+id/event_container"
         android:layout_width="match_parent"
@@ -40,6 +75,7 @@
         <AutoCompleteTextView
             android:id="@+id/location_search_box"
             android:hint="@string/location_search"
+            android:drawableLeft="@drawable/location"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -50,50 +86,41 @@
             android:textColor="@android:color/black"
             android:imeOptions="actionSearch">
         </AutoCompleteTextView>
-        </LinearLayout>
-
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/category_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/location_container"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_margin="10dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_size"
             android:text="@string/category_options_text"/>
-        <Spinner
-            android:id="@+id/category_options"
-            android:layout_width="@dimen/search_spinner_width"
-            android:layout_height="@dimen/search_spinner_height"
-            />
-        <Button
-            android:id="@+id/search_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/button_search"/>
-     </LinearLayout>
+        <!--<Spinner-->
+            <!--android:id="@+id/category_options"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="@dimen/search_spinner_height"-->
+            <!--/>-->
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/category_container">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/text_size"
-            android:text="@string/map_results_text"/>
-        <fragment
-            android:id="@+id/map_fragment"
-            android:tag="SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            class="com.google.android.gms.maps.SupportMapFragment"/>
+        <LinearLayout android:id="@+id/ll_country"
+            android:layout_height="fill_parent" android:layout_width="fill_parent">
+            <ScrollView android:id="@+id/ScrollView11"
+                android:layout_width="fill_parent" android:layout_height="fill_parent"
+                android:fillViewport="true">
+                <LinearLayout android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" android:layout_margin="5dip">
+                    <TableLayout
+                        android:layout_width="fill_parent" android:layout_height="fill_parent"
+                        android:stretchColumns="0,1" android:id="@+id/category_table">
+                    </TableLayout>
+                </LinearLayout>
+            </ScrollView>
         </LinearLayout>
-
-
+     </LinearLayout>
+    </LinearLayout>
 </RelativeLayout>
+</ScrollView>

@@ -1,24 +1,31 @@
 package com.event.search.workers;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +48,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
@@ -57,7 +65,7 @@ import java.util.List;
  * Created by na389 on 9/30/14.
  */
 public class SearchFragment extends Fragment implements AdapterView.OnItemSelectedListener, LoaderManager.LoaderCallbacks<List<String>>, GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener,LocationListener,
-        GetEventData.GetEventDataListener, TextView.OnEditorActionListener {
+        GetEventData.GetEventDataListener, TextView.OnEditorActionListener, View.OnClickListener{
     public static String TAG = "SearchFragment";
 
     /*Keywords used to send parameters for the event search*/
@@ -78,10 +86,13 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
     private Location loc;
     private Spinner mCategorySpinner;
     private int mSelectedCatPos = 0;
-
+    private ArrayList<Event> mRecentEvents;
+    private TableLayout mCategoryTable;
+    private List<String> mCategorySel;
     public SearchFragment() {
         mSelectedCategory = "";
         setArguments(new Bundle());
+        mRecentEvents = new ArrayList<Event>();
     }
 
     @Override
@@ -124,15 +135,9 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_search, container, false);
-        Button searchButton = (Button)rootView.findViewById(R.id.search_button);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                performSearch();
-            }
-        });
-        mCategorySpinner = (Spinner)rootView.findViewById(R.id.category_options);
-        mCategorySpinner.setOnItemSelectedListener(this);
+        //mCategorySpinner = (Spinner)rootView.findViewById(R.id.category_options);
+       // mCategorySpinner.setOnItemSelectedListener(this);
+        mCategoryTable = (TableLayout)rootView.findViewById(R.id.category_table);
         mPlacesAutoComplete = (AutoCompleteTextView) rootView.findViewById(R.id.location_search_box);
         mPlacesAutoComplete.setOnEditorActionListener(this);
         mPlacesAutoComplete.addTextChangedListener(new TextWatcher() {
@@ -262,14 +267,24 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
     @Override
     public void setCategories(ListCategories listCategories) {
         mListCategory = listCategories.getListCategory();
-        setSpinnerData(mListCategory);
+     //   setSpinnerData(mListCategory);
+        mCategorySel = new ArrayList<String>(mListCategory.size());
+        fillTable(mListCategory);
     }
 
     @Override
     public void setEvents(ListEvents listEvents) {
+        /*if(listEvents.getEventList().size() == 0){
+            Toast.makeText(mActivity, "No Results found!!", Toast.LENGTH_SHORT).show();
+            return;
+        }*/
+        mRecentEvents = listEvents.getEventList();
+        SupportMapFragment fragment = (SupportMapFragment) mActivity.getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        if(fragment == null)
+            return;
         final List<Event> list = listEvents.getEventList();
         int mapType = GoogleMap.MAP_TYPE_NORMAL;
-        SupportMapFragment fragment = (SupportMapFragment) mActivity.getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+
         final GoogleMap googleMap = fragment.getMap();
         googleMap.setMapType(mapType);
         googleMap.setMyLocationEnabled(true);
@@ -327,6 +342,9 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
     @Override
     public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            InputMethodManager imm = (InputMethodManager)mActivity.getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(textView.getWindowToken(), 0);
             performSearch();
             return true;
         }
@@ -339,14 +357,22 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
      */
 
     private void performSearch(){
+
         HashMap<String, String> params = new HashMap<String, String>();
         if(!mEventsAutoComplete.getText().toString().isEmpty()) {
             String val = mEventsAutoComplete.getText().toString();
             val.replaceAll("\\s+","+");
             params.put(KEYWORD, val);
         }
-        if(!mSelectedCategory.isEmpty()){
+        /*if(!mSelectedCategory.isEmpty()){
             params.put(SEL_CATEGORIES, mListCategory.get(mSelectedCatPos).getId());
+        }*/
+        if(mCategorySel != null && mCategorySel.size() > 0){
+            StringBuilder val = new StringBuilder();
+            for(String item : mCategorySel){
+                val.append(item).append(",");
+            }
+            params.put(SEL_CATEGORIES, val.toString().substring(0,val.length()-1));
         }
         params.put(LOCATION_WITHIN, RADIUS);
         if(!mPlacesAutoComplete.getText().toString().isEmpty()) {
@@ -356,5 +382,82 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
         }
         GetEventData eventData = new GetEventData(JSONUtils.GET_EVENTS, this, mActivity);
         eventData.execute(params);
+    }
+
+    private void fillTable(ArrayList<Category> list){
+        TableRow row;
+        TextView t1, t2;
+        int dip = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                (float) 1, getResources().getDisplayMetrics());
+        for(int i=0; i < list.size();){
+            row = new TableRow(mActivity);
+            t1 = new TextView(mActivity);
+            t2 = new TextView(mActivity);
+            t1.setClickable(true);
+            t2.setClickable(true);
+            t1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (view.getTag().toString().equals("false")) {
+                        ((TextView) view).setTag("true");
+                        Toast.makeText(mActivity, "Selected", Toast.LENGTH_SHORT).show();
+                        ((TextView) view).setTextColor(Color.BLACK);
+                        if (!mCategorySel.contains(String.valueOf(view.getId())));
+                            mCategorySel.add(String.valueOf(view.getId()));
+                    } else if (view.getTag().toString().equals("true")) {
+                        ((TextView) view).setTag("false");
+                        Toast.makeText(mActivity, "UnSelected", Toast.LENGTH_SHORT).show();
+                        ((TextView) view).setTextColor(Color.GRAY);
+                        if (mCategorySel.contains(String.valueOf(view.getId())))
+                            mCategorySel.remove(String.valueOf(view.getId()));
+                    }
+                }
+            });
+            t2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(view.getTag().toString().equals("false")){
+                        Toast.makeText(mActivity, "Selected", Toast.LENGTH_SHORT).show();
+                        view.setTag("true");
+                        ((TextView)view).setTextColor(Color.BLACK);
+                        if(!mCategorySel.contains(String.valueOf(view.getId())))
+                            mCategorySel.add(String.valueOf(view.getId()));
+                    }
+                    else if(view.getTag().toString().equals("true")){
+                        Toast.makeText(mActivity, "UnSelected", Toast.LENGTH_SHORT).show();
+                        view.setTag("false");
+                        ((TextView)view).setTextColor(Color.GRAY);
+                        if(mCategorySel.contains(String.valueOf(view.getId())))
+                            mCategorySel.remove(String.valueOf(view.getId()));
+                    }
+                }
+            });
+            t1.setText(list.get(i).getName());
+            t1.setId(Integer.parseInt(list.get(i).getId()));
+            t1.setTag("false");
+            t2.setText(list.get(i+1).getName());
+            t2.setId(Integer.parseInt(list.get(i+1).getId()));
+            t2.setTag("false");
+            t1.setTypeface(null, 0);
+            t2.setTypeface(null, 0);
+            t1.setTextColor(Color.GRAY);
+            t2.setTextColor(Color.GRAY);
+            t1.setTextSize(20);
+            t2.setTextSize(20);
+
+            t1.setWidth(50 * dip);
+            t2.setWidth(150 * dip);
+            t1.setPadding(20*dip, 0, 0, 0);
+            row.addView(t1);
+            row.addView(t2);
+            i = i + 2;
+            mCategoryTable.addView(row, new TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+
     }
 }

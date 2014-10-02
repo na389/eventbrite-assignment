@@ -14,8 +14,11 @@ import java.util.HashMap;
 
 /**
  * Created by na389 on 9/30/14.
+ *
+ * Thread used to get the search results depending upon API and parameters passed
  */
 public class GetEventData extends AsyncTask<HashMap<String, String>, Void, String> {
+    public static String TAG = "GetEventData";
     protected String mApiName;
     protected Context mContext;
     protected GetEventDataListener mListener;
@@ -59,6 +62,8 @@ public class GetEventData extends AsyncTask<HashMap<String, String>, Void, Strin
 
     }
 
+    /*Interface to be implemented by the classes using the thread to use the result.
+    * This is the only way of getting the output provided by the thread to keep the implementation neat*/
     public interface GetEventDataListener {
         public void setCategories(ListCategories listCategories);
         public void setEvents(ListEvents listEvents);

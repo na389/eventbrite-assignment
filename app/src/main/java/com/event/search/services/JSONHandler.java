@@ -31,20 +31,30 @@ import java.util.Map;
 
 /**
  * Created by na389 on 9/27/14.
+ * Class to handle interaction with the web.
+ * It makes the http call and returns the json result
  */
+
 public class JSONHandler {
     public static final String TAG = "JSONHandler";
     private HashMap<String, String> mParams;
     private String mApiName;
 
-    public JSONHandler(HashMap<String, String> params, String apiName){
+    public JSONHandler(HashMap<String, String> params, String apiName) {
         this.mParams = params;
         this.mApiName = apiName;
     }
 
-    public String executeWebMethod(){
+    /**
+     * Method to return json result for the call made for eventbrite API:
+     * 1. Event search
+     * 2. Category
+     *
+     * @return
+     */
+    public String executeWebMethod() {
 
-        if(mParams == null){
+        if (mParams == null) {
             return "";
         }
         String responseString = null;
@@ -52,32 +62,37 @@ public class JSONHandler {
         try {
             StringBuilder urlBuilder = new StringBuilder();
             urlBuilder.append(JSONUtils.API_URL_COMMON).append(mApiName).append("?token=").append(JSONUtils.OAUTH_CLIENT_TOKEN).append("&");
-            if(mParams != null) {
+            if (mParams != null) {
                 for (Map.Entry<String, String> item : mParams.entrySet()) {
                     urlBuilder.append(item.getKey() + "=" + item.getValue() + "&");
                 }
             }
             //Remove & at the end
-            String url= urlBuilder.substring(0, urlBuilder.length()-1);
+            String url = urlBuilder.substring(0, urlBuilder.length() - 1);
             //There can be spaces in the string. Replace then with relevant character which server understands
-            String finalUrl = url.replaceAll("\\s+","%20");
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>."+finalUrl);
+            String finalUrl = url.replaceAll("\\s+", "%20");
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>." + finalUrl);
             HttpResponse response = httpclient.execute(new HttpGet(finalUrl));
             StatusLine statusLine = response.getStatusLine();
-            if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+            if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
                 responseString = EntityUtils.toString(response.getEntity());
-            } else{
-                Log.e(TAG, "Failed to download--"+statusLine.toString());
+            } else {
+                Log.e(TAG, "Failed to download--" + statusLine.toString());
             }
-        }catch (ClientProtocolException e) {
+        } catch (ClientProtocolException e) {
             e.printStackTrace();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return responseString;
     }
 
+    /**
+     * Method to return json result of Google Places API depending upon what is user looking for.
+     *
+     * @param input
+     * @return
+     */
     public String placesAutoComplete(String input) {
         String result = null;
 
@@ -108,9 +123,6 @@ public class JSONHandler {
                 conn.disconnect();
             }
         }
-
-
-
         return jsonResults.toString();
     }
 }
