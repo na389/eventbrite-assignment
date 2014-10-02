@@ -36,7 +36,7 @@ Utilities: Json parsing and network call require some constants and utility func
 Displaying the results: Finally after all the processing results have been displayed in MapView with markers showing search results. And their click shows brief detail about the events.
 
 Notable Shortcomings:
-1. The map displaying the results is showing some consistent behaviour in showing the results.
+1. The map displaying the results is showing some inconsistent behaviour in showing the results.
 2. After testing the application a lot of times on a device the behaviour of autocomplete is little laggard but works :)
 
 
