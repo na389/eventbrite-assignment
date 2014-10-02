@@ -42,6 +42,7 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -135,8 +136,6 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_search, container, false);
-        //mCategorySpinner = (Spinner)rootView.findViewById(R.id.category_options);
-       // mCategorySpinner.setOnItemSelectedListener(this);
         mCategoryTable = (TableLayout)rootView.findViewById(R.id.category_table);
         mPlacesAutoComplete = (AutoCompleteTextView) rootView.findViewById(R.id.location_search_box);
         mPlacesAutoComplete.setOnEditorActionListener(this);
@@ -240,6 +239,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
 
     @Override
     public void onConnected(Bundle bundle) {
+        //mLocationClient.requestLocationUpdates(createLocationRequest(), this);
         loc = mLocationClient.getLastLocation();
         GetEventData getEventData = new GetEventData(JSONUtils.GET_EVENTS, this, mActivity);
         HashMap<String, String> params = new HashMap<String, String>();
@@ -251,17 +251,22 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
 
     @Override
     public void onDisconnected() {
-
+     //   mLocationClient.removeLocationUpdates(this);
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-
+    public void onLocationChanged(Location loc) {
+        /*GetEventData getEventData = new GetEventData(JSONUtils.GET_EVENTS, this, mActivity);
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put(LOCATION_WITHIN, RADIUS);
+        params.put("location.longitude", String.valueOf(loc.getLongitude()));
+        params.put("location.latitude", String.valueOf(loc.getLatitude()));
+        getEventData.execute(params);*/
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
+     //   mLocationClient.removeLocationUpdates(this);
     }
 
     @Override
@@ -274,10 +279,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
 
     @Override
     public void setEvents(ListEvents listEvents) {
-        /*if(listEvents.getEventList().size() == 0){
-            Toast.makeText(mActivity, "No Results found!!", Toast.LENGTH_SHORT).show();
-            return;
-        }*/
+
         mRecentEvents = listEvents.getEventList();
         SupportMapFragment fragment = (SupportMapFragment) mActivity.getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         if(fragment == null)
@@ -299,6 +301,57 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng((int) (loc.getLatitude() * 1E6),
                         (int) (loc.getLongitude() * 1E6)), 15.0f));
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                marker.showInfoWindow();
+                return true;
+            }
+        });
+        googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+            // Use default InfoWindow frame
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            // Defines the contents of the InfoWindow
+            @Override
+            public View getInfoContents(Marker arg0) {
+
+                // Getting view from the layout file info_window_layout
+                View v = mActivity.getLayoutInflater().inflate(R.layout.layout_map_marker, null);
+
+
+
+                String[] val = arg0.getTitle().split(":");
+                if(val.length >= 1 ) {
+
+                    TextView tvTitle = (TextView) v.findViewById(R.id.tv_title);
+
+
+                    TextView tvDesc = (TextView) v.findViewById(R.id.tv_desc);
+
+                    TextView tvVenue = (TextView) v.findViewById(R.id.tv_venue);
+
+                    tvTitle.setText(val[0]);
+                    if (val.length < 2)
+                        tvDesc.setText("Not available!!");
+                    else
+                        tvDesc.setText(val[1]);
+
+                    if (val.length < 3)
+                        tvVenue.setText("Not available!!");
+                    else
+                        tvVenue.setText(val[2]);
+
+                }
+                // Returning the view containing InfoWindow contents
+                return v;
+
+            }
+        });
 
         final View mapView = fragment.getView();
 
@@ -311,8 +364,10 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
                 @Override
                 public void onGlobalLayout() {
                     int counter = 0;
+
                     LatLngBounds.Builder bld = new LatLngBounds.Builder();
                     for (int i = 0; i < list.size(); i++) {
+                        StringBuilder title = new StringBuilder();
                         Venue venue = list.get(i).getVenue();
                         if(venue!=null) {
 
@@ -321,12 +376,30 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
                             LatLng ll = new LatLng(latitude, longitude);
                             bld.include(ll);
                             counter++;
+                            String desc = list.get(i).getDescription().getText();
+                            if(desc== null)
+                                desc = " ";
+
+                            String venue1 = list.get(i).getVenue().getAddress().getAddress_1();
+                            if(venue1== null)
+                                venue1 = "";
+
+                            String venue2 = list.get(i).getVenue().getAddress().getAddress_1();
+                            if(venue2== null)
+                                venue2 = "";
+
+                            title.append(list.get(i).getName().getText()).append(":")
+                                  .append(desc).append(":")
+                                  .append(venue1).append(venue2);
+
                             googleMap.addMarker(new MarkerOptions()
                                             .position(new LatLng(latitude, longitude))
-                                            .title(list.get(i).getName().getText())
+                                            .title(title.toString())
                                             .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark_blue))
                             );
+
                         }
+
                     }
                     if(counter > 0) {
                         LatLngBounds bounds = bld.build();
@@ -459,5 +532,16 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemSelect
     @Override
     public void onClick(View view) {
 
+    }
+
+    private static LocationRequest createLocationRequest() {
+        final LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // The rate at which the application actively requests location updates.
+        locationRequest.setInterval(60 * 1000);
+        // The fastest rate at which the application receives location updates, for example when another
+        // application has requested a location update, this application also receives that event.
+        locationRequest.setFastestInterval(10 * 1000);
+        return locationRequest;
     }
 }

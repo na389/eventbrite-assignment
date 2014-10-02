@@ -71,7 +71,6 @@ public class JSONHandler {
             String url = urlBuilder.substring(0, urlBuilder.length() - 1);
             //There can be spaces in the string. Replace then with relevant character which server understands
             String finalUrl = url.replaceAll("\\s+", "%20");
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>." + finalUrl);
             HttpResponse response = httpclient.execute(new HttpGet(finalUrl));
             StatusLine statusLine = response.getStatusLine();
             if (statusLine.getStatusCode() == HttpStatus.SC_OK) {

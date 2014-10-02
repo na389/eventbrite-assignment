@@ -1,0 +1,58 @@
+Event-Brite-Assignment:
+Application to help user look for events given following inputs:
+1. Keyword
+2. Location
+3. Category
+
+Features:
+1. Autocomplete feature is available for the search fields so as to make it easer for the user perform the search.
+2. Categories are already listed to be selected from because there is a specific category an event can belong to, therefore, it refines the search.
+3. Show the result of the search on the mapview at the top.
+4. Supports portrait orientation.
+
+Architectural Choices:
+Various modules of the application involves:
+1.	Search
+2.	Network Call	
+3.	Data Parsing
+4.	Utilities
+5.	Displaying the results
+
+Search: Since an activity is the component responsible for presenting the user interface to the user screen has been implemented as a part of activity called SearchActivity. Activity has been used just to 
+Further, a fragment has been added to it in order to handle the search related functionalities
+1. Populating and managing categories
+2. Autocomplete of both keyword and location.
+3. Handle the search results.
+4. Displaying events and details on the marker shown on mapview.
+5. Thread calls required to update the UI.
+6. Getting user's current location used Fused Location Provider and display initial results accordingly.
+
+Network Call: Making a network call on UI thread can start giving ANR plus it is a bad implementation as Network call might take long time depending upon the quality of the network. Therefore, AsyncTask and AsyncTaskLoader have been used to make a network call with both Event-brite and Google Places API.
+
+Data Parsing: In order to use JSON response data parsing is an important step. After some research Jackson Marshalling API came out be an efficient JSON parsing API therefore, it has been used. Several DataModel wrappers have been created in order to store the data local and process as required. Jackson annotations and API have been used for it.
+
+Utilities: Json parsing and network call require some constants and utility functions which can be used at various points therefore, some there is package for JSON Utility methods.
+
+Displaying the results: Finally after all the processing results have been displayed in MapView with markers showing search results. And their click shows brief detail about the events.
+
+Notable Shortcomings:
+1. The map displaying the results is showing some consistent behaviour in showing the results.
+2. After testing the application a lot of times on a device the behaviour of autocomplete is little laggard but works :)
+
+
+Dependencies:
+To support a wide range of APIs following dependencies are present:
+ 'com.google.android.gms:play-services:5.+'
+ 'com.android.support:appcompat-v7:20.0.0'
+ 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.1'
+ 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.1'
+ 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.1'
+ 'com.android.support:support-v4:20.0.0'
+
+Tools Used:
+Development: Android Studio which includes Gradle, Maven, Git
+Testing: Nexus 7
+GIT location: https://github.com/na389/eventbrite-assignment
+Javadoc included at git location as index.html
+
+

@@ -75,7 +75,6 @@
         <AutoCompleteTextView
             android:id="@+id/location_search_box"
             android:hint="@string/location_search"
-            android:drawableLeft="@drawable/location"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
